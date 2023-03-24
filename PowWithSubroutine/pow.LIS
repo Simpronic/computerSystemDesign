@@ -1,0 +1,40 @@
+00000000                                     1  *PROGRAMMA CHE CALCOLA CON UNA SUBROUTINE 2^3
+00000000                                     2  
+00008000                                     3  	ORG $8000
+00008000  DEFC FFFE                          4  MAIN    ADDA #-2,SP
+00008004  3F39 00009000                      5  	MOVE.W BASE,-(SP)
+0000800A  3F39 00009002                      6  	MOVE.W ESPONENTE,-(SP)
+00008010  4EB9 00008026                      7  	JSR POW
+00008016  DEFC 0004                          8  	ADDA #4,SP
+0000801A  33DF 00009004                      9  	MOVE.W (SP)+,R
+00008020  4EF9 00008020                     10  ENDPOINT JMP ENDPOINT
+00008026                                    11  
+00008026                                    12  *SUBROUTINE
+00008026                                    13  POW	
+00008026  4E50 0000                         14  	LINK A0,#0
+0000802A  48E7 E000                         15  	MOVEM.L D0-D2,-(SP)
+0000802E  3028 0008                         16  	MOVE.W ESPOFF(A0),D0 
+00008032  3228 000A                         17  	MOVE.W BASEOFF(A0),D1
+00008036  3428 000A                         18  	MOVE.W BASEOFF(A0),D2
+0000803A  0640 FFFF                         19  LOOP  ADD #-1,D0
+0000803E  6700 0006                         20  	BEQ ENDLOOP
+00008042  C5C1                              21  	MULS D1,D2
+00008044  60F4                              22  	BRA LOOP 
+00008046  3142 000C                         23  ENDLOOP	MOVE.W D2,RESOFF(A0)
+0000804A  4E58                              24  	UNLK A0
+0000804C  4E75                              25  	RTS
+0000804E                                    26  
+0000804E                                    27  *AREA DATI 
+00009000                                    28  	ORG $9000
+00009000  0002                              29  BASE DC.W 2
+00009002  0003                              30  ESPONENTE DC.W 3
+00009004                                    31  R DS.W 1
+00009006  =00000000                         32  OLDFP EQU 0
+00009006  =00000004                         33  RETADDOFF EQU 4
+00009006  =0000000C                         34  RESOFF EQU 12
+00009006  =00000008                         35  ESPOFF EQU 8 
+00009006  =0000000A                         36  BASEOFF EQU 10
+00009006                                    37  	END MAIN
+
+No errors detected
+No warnings generated

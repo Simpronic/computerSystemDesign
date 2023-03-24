@@ -1,0 +1,27 @@
+00000000                                     1  * Il programma ha l'obiettivo di ritornare la posizione del primo 0 che incontra
+00000000                                     2  	
+00008000                                     3  	ORG $8000
+00008000  4239 00009008                      4  START CLR.B R
+00008006  103C 0000                          5  	MOVE.B #0,D0
+0000800A  41F9 00009000                      6  	LEA STR,A0
+00008010  4201                               7  	CLR.B D1
+00008012  123C 0004                          8  	MOVE.B #DIM,D1
+00008016  0641 FFFF                          9  LOOP  ADD #-1,D1
+0000801A  4A41                              10  	TST D1
+0000801C  6700 000C                         11  	BEQ ENDLOOP
+00008020  4A58                              12  	TST (A0)+
+00008022  6700 0006                         13  	BEQ ENDLOOP
+00008026  5240                              14  	ADD #1,D0
+00008028  60EC                              15  	BRA LOOP
+0000802A  13C0 00009008                     16  ENDLOOP MOVE.B D0,R
+00008030  4EF9 00008030                     17  ENDPOINT JMP ENDPOINT
+00008036                                    18  
+00008036                                    19  *Area Dati
+00009000                                    20  	ORG $9000
+00009000  000A 000B 0000 0001               21  STR DC.W 10,11,0,1
+00009008  =00000004                         22  DIM EQU 4
+00009008                                    23  R DS.B 1
+00009009                                    24  	END START
+
+No errors detected
+No warnings generated

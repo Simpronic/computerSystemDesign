@@ -1,0 +1,177 @@
+00008000                                     1  	ORG $8000
+00008000  01 04 02 06 04 01 01 03 0A         2  MAT DC.B 1,4,2,6,4,1,1,3,10 
+00008009                                     3  MAX DS.B 1
+0000800A                                     4  MIN DS.B 1
+0000800C  0003                               5  NC DC.W 3
+0000800E  0003                               6  NR DC.W 3
+00008010                                     7  HBIT DS.W 1
+00008012  =00000001                          8  SIZE EQU 1
+00008012                                     9  
+00008012                                    10  *Spiazzamenti primo punto
+00008012  =00000008                         11  ASMAT EQU 8
+00008012  =0000000C                         12  ASNR EQU 12
+00008012  =0000000E                         13  ASNC EQU 14
+00008012  =00000010                         14  ASMIN EQU 16
+00008012  =00000011                         15  ASMAX EQU 17
+00008012  =00000012                         16  ASRMIN EQU 18
+00008012  =00000013                         17  ASRMAX EQU 19
+00008012  =00000008                         18  AGARB EQU 8
+00008012                                    19  
+00008012                                    20  *Spiazzamenti secondo punto 
+00008012  =00000008                         21  BSMAT EQU 8
+00008012  =0000000C                         22  BSIRMIN EQU 12
+00008012  =0000000D                         23  BSIRMAX EQU 13
+00008012  =0000000E                         24  BSNR EQU 14
+00008012  =00000010                         25  BSNC EQU 16
+00008012  =0000000A                         26  BGARB EQU 10
+00008012                                    27  
+00008012                                    28  *Spiazzamenti terzo punto
+00008012  =00000008                         29  CSMAT EQU 8
+00008012  =0000000C                         30  CSNC EQU 12
+00008012  =0000000E                         31  CSNBIT EQU 14
+00008012  =00000006                         32  CGARB EQU 6
+00008012                                    33  
+00008800                                    34  	ORG $8800
+00008800  DEFC FFFC                         35  MAIN ADDA #-4,SP
+00008804  3F39 0000800C                     36           MOVE.W NC,-(SP)
+0000880A  3F39 0000800E                     37           MOVE.W NR,-(SP)
+00008810  4879 00008000                     38           PEA MAT	
+00008816  4EB9 00008942                     39           JSR MINMAX          
+0000881C  DEFC 0008                         40           ADDA #AGARB,SP
+00008820  101F                              41           MOVE.B (SP)+,D0
+00008822  121F                              42           MOVE.B (SP)+,D1
+00008824  141F                              43           MOVE.B (SP)+,D2
+00008826  161F                              44           MOVE.B (SP)+,D3
+00008828  13C1 00008009                     45           MOVE.B D1,MAX
+0000882E  13C0 0000800A                     46           MOVE.B D0,MIN
+00008834  3F39 0000800C                     47           MOVE.W NC,-(SP)
+0000883A  3F39 0000800E                     48           MOVE.W NR,-(SP)
+00008840  1F02                              49           MOVE.B D2,-(SP)
+00008842  1F03                              50           MOVE.B D3,-(SP) 
+00008844  4879 00008000                     51           PEA MAT
+0000884A  4EB9 000088EA                     52           JSR RSWP
+00008850  DEFC 000A                         53           ADDA #BGARB,SP
+00008854  3039 0000800C                     54           MOVE.W NC,D0
+0000885A  3239 0000800E                     55           MOVE.W NR,D1
+00008860  B240                              56           CMP D0,D1
+00008862  6600 001E                         57           BNE ENDPOINT 
+00008866  DEFC FFFE                         58           ADDA #-2,SP
+0000886A  3F39 0000800C                     59           MOVE.W NC,-(SP)
+00008870  4879 00008000                     60           PEA MAT 
+00008876  4EB9 00008888                     61           JSR DBITCOUNT
+0000887C  DEFC 0006                         62           ADDA #CGARB,SP
+00008880  301F                              63           MOVE.W (SP)+,D0
+00008882  4EF9 00008882                     64  ENDPOINT JMP ENDPOINT
+00008888                                    65  
+00008888  4E52 0000                         66  DBITCOUNT LINK A2,#0
+0000888C  48E7 F870                         67                       MOVEM.L D0-D4/A1-A3,-(SP)
+00008890  103C 0008                         68                       MOVE.B #8,D0
+00008894  226A 0008                         69                       MOVE.L CSMAT(A2),A1
+00008898  362A 000C                         70  	         MOVE CSNC(A2),D3
+0000889C  3203                              71  	         MOVE D3,D1
+0000889E  C2FC 0001                         72  	         MULU #SIZE,D1
+000088A2  5241                              73  	         ADD #1,D1
+000088A4  4244                              74  	         CLR D4
+000088A6  4242                              75  	         CLR D2
+000088A8  4A43                              76  DLOOP TST D3
+000088AA  6700 0032                         77  	BEQ EDLOOP
+000088AE  5343                              78  	SUBI #1,D3
+000088B0  3A01                              79  	MOVE D1,D5
+000088B2  2649                              80  	MOVEA.L A1,A3
+000088B4  CAC3                              81  	MULU D3,D5
+000088B6  D6C5                              82  	ADD D5,A3
+000088B8  1413                              83  	MOVE.B (A3),D2
+000088BA  4A40                              84  ELOOP TST D0
+000088BC  6700 0016                         85  	BEQ EELOOP
+000088C0  5340                              86  	SUBI #1,D0
+000088C2  0802 0000                         87  	BTST #0,D2
+000088C6  6700 0004                         88  	BEQ NADD --Questo perchè btst nega il bit
+000088CA  5244                              89  	ADD #1,D4
+000088CC  E24A                              90  NADD   LSR #1,D2 
+000088CE  4EF9 000088BA                     91  	JMP ELOOP 
+000088D4  303C 0008                         92  EELOOP MOVE #8,D0	
+000088D8  4EF9 000088A8                     93  	   JMP DLOOP
+000088DE                                    94  EDLOOP
+000088DE  3544 000E                         95  	MOVE D4,CSNBIT(A2)
+000088E2  4CDF 0E1F                         96  	MOVEM.L (SP)+,D0-D4/A1-A3
+000088E6  4E5A                              97  	UNLK A2
+000088E8  4E75                              98  	RTS 
+000088EA                                    99  
+000088EA  4E53 0000                        100  RSWP LINK A3,#0
+000088EE  48E7 FC70                        101  	MOVEM.L D0-D5/A1-A3,-(SP)
+000088F2  302B 0010                        102  	MOVE.W BSNC(A3),D0
+000088F6  322B 000E                        103              MOVE.W BSNR(A3),D1        
+000088FA  182B 000C                        104  	MOVE.B  BSIRMIN(A3),D4
+000088FE  162B 000D                        105              MOVE.B BSIRMAX(A3),D3
+00008902  3A00                             106              MOVE.W D0,D5
+00008904  CAFC 0001                        107  	MULU #SIZE,D5
+00008908  B244                             108              CMP D4,D1
+0000890A  6D00 002E                        109              BLT ECLOOP
+0000890E  B243                             110  	CMP D3,D1
+00008910  6D00 0028                        111  	BLT ECLOOP
+00008914  3203                             112  	MOVE D3,D1
+00008916  C2C5                             113  	MULU D5,D1
+00008918  226B 0008                        114  	MOVE.L BSMAT(A3),A1
+0000891C  2449                             115  	MOVE.L A1,A2
+0000891E  D2C1                             116  	ADD D1,A1
+00008920  3204                             117  	MOVE D4,D1
+00008922  C2C5                             118  	MULU D5,D1
+00008924  D4C1                             119  	ADD D1,A2
+00008926  4A40                             120  CLOOP TST D0
+00008928  6700 0010                        121  	BEQ ECLOOP
+0000892C  1411                             122  	MOVE.B (A1),D2
+0000892E  12D2                             123  	MOVE.B (A2),(A1)+
+00008930  14C2                             124  	MOVE.B D2,(A2)+
+00008932  5340                             125  	SUBI #1,D0
+00008934  4EF9 00008926                    126  	JMP CLOOP
+0000893A                                   127  ECLOOP 
+0000893A  4CDF 0E3F                        128  	MOVEM.L (SP)+,D0-D5/A1-A3
+0000893E  4E5B                             129              UNLK A3
+00008940  4E75                             130  	RTS 
+00008942                                   131  
+00008942  4E56 0000                        132  MINMAX LINK A6,#0
+00008946  48E7 FF60                        133  	   MOVEM.L D0-D7/A1-A2,-(SP)
+0000894A  226E 0008                        134  	   MOVE.L ASMAT(A6),A1
+0000894E  302E 000E                        135  	   MOVE.W ASNC(A6),D0
+00008952  322E 000C                        136  	   MOVE.W ASNR(A6),D1
+00008956  3001                             137  	   MOVE.W D1,D0
+00008958  3E00                             138  	   MOVE.W D0,D7
+0000895A  C0FC 0001                        139  	   MULU #SIZE,D0
+0000895E  4242                             140  	   CLR D2
+00008960  4243                             141  	   CLR D3
+00008962  183C 007F                        142  	   MOVE.B #127,D4
+00008966  4A41                             143  ALOOP TST D1
+00008968  6700 003E                        144  	BEQ EALOOP
+0000896C  5341                             145  	SUBI #1,D1
+0000896E  3C00                             146  	MOVE.W D0,D6
+00008970  CCC1                             147  	MULU D1,D6
+00008972  2449                             148  	MOVEA.L A1,A2
+00008974  D4C6                             149  	ADD D6,A2
+00008976  4A40                             150  BLOOP TST D0
+00008978  6700 0024                        151  	BEQ EBLOOP
+0000897C  141A                             152  	MOVE.B (A2)+,D2
+0000897E  5340                             153  	SUBI #1,D0
+00008980  B444                             154  	CMP D4,D2
+00008982  6E00 0008                        155  	BGT BCGREATER 
+00008986  1802                             156  	MOVE.B D2,D4
+00008988  1D41 0012                        157  	MOVE.B D1,ASRMIN(A6)
+0000898C  B443                             158  BCGREATER CMP D3,D2
+0000898E  6D00 0008                        159  	BLT BENDGREATER
+00008992  1602                             160  	MOVE.B D2,D3
+00008994  1D41 0013                        161  	MOVE.B D1,ASRMAX(A6)
+00008998  4EF9 00008976                    162  BENDGREATER JMP BLOOP
+0000899E                                   163  EBLOOP
+0000899E  3007                             164  	MOVE.W D7,D0
+000089A0  3449                             165  	MOVEA A1,A2
+000089A2  4EF9 00008966                    166  	JMP ALOOP
+000089A8                                   167  EALOOP 
+000089A8  1D43 0011                        168  	MOVE.B D3,ASMAX(A6)
+000089AC  1D44 0010                        169  	MOVE.B D4,ASMIN(A6)
+000089B0  4CDF 06FF                        170  	MOVEM.L (SP)+,D0-D7/A1-A2
+000089B4  4E5E                             171  	UNLK A6
+000089B6  4E75                             172  	RTS
+000089B8                                   173  
+000089B8                                   174  	END MAIN 
+
+No errors detected
+No warnings generated

@@ -1,0 +1,73 @@
+00008000                                     1  	ORG $8000
+00008000  DEFC FFFE                          2  MAIN ADDA #-2,SP
+00008004  3F39 00008812                      3            MOVE.W SIZE,-(SP)
+0000800A  1F39 00008815                      4            MOVE.B NC,-(SP)
+00008010  1F39 00008814                      5            MOVE.B NR,-(SP)
+00008016  2F39 00008800                      6            MOVE.L MAT,-(SP)
+0000801C  4EB9 0000803C                      7            JSR MINMAX
+00008022  DEFC 0008                          8            ADDA #8,SP
+00008026  301F                               9            MOVE.W (SP)+,D0
+00008028  321F                              10            MOVE.W (SP)+,D1
+0000802A  33C0 00008816                     11            MOVE.W D0,MIN
+00008030  33C1 00008818                     12            MOVE.W D1,MAX
+00008036  4EF9 00008036                     13  ENDPOINT JMP ENDPOINT
+0000803C                                    14  
+0000803C  4E50 0000                         15  MINMAX LINK A0,#0
+00008040  48E7 FC40                         16  	MOVEM.L D0-D5/A1,-(SP)
+00008044  2268 0008                         17  	MOVE.L MATOFF(A0),A1
+00008048  1028 000C                         18  	MOVE.B ROWOFF(A0),D0
+0000804C  1228 000D                         19  	MOVE.B COLOFF(A0),D1
+00008050  3428 000E                         20  	MOVE.W SIZEOFF(A0),D2
+00008054  C4C1                              21  	MULU D1,D2
+00008056  4643                              22  	NOT D3 *PER IL MINIMO
+00008058  4244                              23  	CLR D4 *PER IL MASSIMO
+0000805A  5340                              24  LOOP1 SUBI #1,D0
+0000805C  B07C 0000                         25  	CMP #0,D0
+00008060  6700 0038                         26  	BEQ ENDLOOP1
+00008064  3A00                              27  	MOVE.W D0,D5
+00008066  CAC2                              28  	MULU D2,D5
+00008068  2268 0008                         29  	MOVE.L MATOFF(A0),A1
+0000806C  D2C5                              30              ADD D5,A1
+0000806E  1228 000D                         31  	MOVE.B COLOFF(A0),D1
+00008072  B27C 0000                         32  LOOP2 CMP #0,D1
+00008076  6700 001C                         33  	BEQ ENDLOOP2
+0000807A  3A19                              34  	MOVE.W (A1)+,D5
+0000807C  BA83                              35  	CMP.L D3,D5
+0000807E  6E00 0004                         36  	BGT CONFRONTOMASSIMO
+00008082  3605                              37  	MOVE.W D5,D3
+00008084                                    38  CONFRONTOMASSIMO
+00008084  BA84                              39  	CMP.L D4,D5 
+00008086  6300 0004                         40  	BLS FINECONFRONTI
+0000808A  3805                              41  	MOVE.W D5,D4
+0000808C                                    42  FINECONFRONTI 
+0000808C  5341                              43  	SUBI #1,D1
+0000808E  4EF9 00008072                     44  	JMP LOOP2
+00008094                                    45  ENDLOOP2	
+00008094  4EF9 0000805A                     46  	JMP LOOP1
+0000809A                                    47  ENDLOOP1
+0000809A  3143 0010                         48  	MOVE.W D3,MINOFF(A0)
+0000809E  3144 0012                         49  	MOVE.W D4,MAXOFF(A0)
+000080A2  4CDF 023F                         50              MOVEM.L (SP)+,D0-D5/A1
+000080A6  4E58                              51  	UNLK A0
+000080A8  4E75                              52  	RTS
+000080AA                                    53  
+000080AA                                    54  *AREA DATI
+00008800                                    55  	ORG $8800
+00008800  000B 0016 00A0 006E 0008 ...      56  MAT DC.W 11,22,160,110,8,1,2,32,100
+00008812  0002                              57  SIZE DC.W 2
+00008814  03                                58  NR DC.B 3
+00008815  03                                59  NC DC.B 3
+00008816                                    60  MIN DS.W 1
+00008818                                    61  MAX DS.W 1
+0000881A                                    62  
+0000881A  =0000000D                         63  COLOFF EQU 13
+0000881A  =0000000E                         64  SIZEOFF EQU 14
+0000881A  =0000000C                         65  ROWOFF EQU 12 
+0000881A  =00000012                         66  MAXOFF EQU 18
+0000881A  =00000010                         67  MINOFF EQU 16
+0000881A  =00000008                         68  MATOFF EQU 8
+0000881A                                    69  
+0000881A                                    70  	END MAIN
+
+No errors detected
+No warnings generated

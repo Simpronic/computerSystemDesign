@@ -1,0 +1,24 @@
+* Il programma ha l'obiettivo di ritornare la posizione del primo 0 che incontra
+	
+	ORG $8000
+START CLR.B R
+	MOVE.B #0,D0
+	LEA STR,A0
+	CLR.B D1
+	MOVE.B #DIM,D1
+LOOP  ADD #-1,D1
+	TST D1
+	BEQ ENDLOOP
+	TST (A0)+
+	BEQ ENDLOOP
+	ADD #1,D0
+	BRA LOOP
+ENDLOOP MOVE.B D0,R
+ENDPOINT JMP ENDPOINT
+
+*Area Dati
+	ORG $9000
+STR DC.W 10,11,0,1
+DIM EQU 4
+R DS.B 1
+	END START

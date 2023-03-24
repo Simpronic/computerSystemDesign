@@ -1,0 +1,63 @@
+00000000                                     1  
+00008000                                     2  	ORG $8000
+00008000  DEFC FFFE                          3  MAIN ADDA #-2,SP
+00008004  2F3C 00008800                      4           	MOVE.L #MAT,-(SP)
+0000800A  3F39 0000880A                      5  	MOVE.W SR1,-(SP)
+00008010  3F39 0000880C                      6  	MOVE.W SR2,-(SP)
+00008016  4EB9 0000802C                      7  	JSR SCAMBIARIGHE
+0000801C  4CDF 063E                          8           	MOVEM.L (SP)+,D1-D5/A1-A2
+00008020  DEFC 0008                          9  	ADDA #8,SP
+00008024  301F                              10  	MOVE.W (SP)+,D0
+00008026  4EF9 00008026                     11  ENDPOINT JMP ENDPOINT
+0000802C                                    12  
+0000802C  4E50 0000                         13  SCAMBIARIGHE LINK A0,#0
+00008030  48E7 7C60                         14  	MOVEM.L D1-D5/A1-A2,-(SP)
+00008034                                    15  	*Controllo di validità
+00008034  4243                              16  	CLR D3 *registro per il risultato
+00008036  3228 000A                         17  	MOVE.W SR1OFF(A0),D1
+0000803A  3A3C 0003                         18  	MOVE.W #NR,D5
+0000803E  9A41                              19  	SUB D1,D5
+00008040  6B00 0040                         20  	BMI ENDSUB
+00008044  3228 0008                         21  	MOVE.W SR2OFF(A0),D1
+00008048  3A3C 0003                         22  	MOVE.W #NR,D5
+0000804C  9A41                              23  	SUB  D1,D5
+0000804E  6B00 0032                         24  	BMI ENDSUB
+00008052  3228 000A                         25  	MOVE.W SR1OFF(A0),D1
+00008056  3428 0008                         26  	MOVE.W SR2OFF(A0),D2
+0000805A  C2FC 0003                         27  	MULU #MULSIZENR,D1
+0000805E  C4FC 0003                         28  	MULU #MULSIZENR,D2
+00008062  2268 000C                         29  	MOVE.L MATOFF(A0),A1
+00008066  2449                              30  	MOVE.L A1,A2
+00008068  D2C1                              31  	ADDA D1,A1
+0000806A  D4C2                              32  	ADDA D2,A2
+0000806C  383C 0000                         33  	MOVE.W #0,D4
+00008070  1211                              34  LOOP MOVE.B (A1),D1
+00008072  12D2                              35            MOVE.B (A2),(A1)+
+00008074  14C1                              36            MOVE.B D1,(A2)+
+00008076  5244                              37            ADD #1,D4
+00008078  B87C 0003                         38            CMP #3,D4
+0000807C  66F2                              39            BNE LOOP 
+0000807E  163C 0001                         40            MOVE.B #1,D3
+00008082  3143 0010                         41  ENDSUB MOVE.W D3,RESOFF(A0)
+00008086  4E58                              42  	UNLK A0
+00008088  4E75                              43  	RTS
+0000808A                                    44  *Area dati
+00008800                                    45  	ORG $8800
+00008800  0B 16 79 11 08 01 00 20 64        46  MAT DC.B 11,22,121,17,8,1,0,32,100
+00008809  =00000003                         47  NC EQU 3
+00008809  =00000003                         48  NR EQU 3
+00008809  =00000001                         49  SIZE EQU 1
+00008809  =00000003                         50  MULSIZENR EQU SIZE*NR
+0000880A  0002                              51  SR1 DC.W 2
+0000880C  0000                              52  SR2 DC.W 0
+0000880E  =00000000                         53  FPOFF EQU 0
+0000880E  =00000004                         54  RETADDOFF EQU 4
+0000880E  =00000008                         55  SR2OFF EQU 8
+0000880E  =0000000A                         56  SR1OFF EQU 10
+0000880E  =0000000C                         57  MATOFF EQU 12
+0000880E  =00000010                         58  RESOFF EQU 16
+0000880E                                    59  
+0000880E                                    60  	END MAIN
+
+No errors detected
+No warnings generated
