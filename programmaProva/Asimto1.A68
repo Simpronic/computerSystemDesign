@@ -16,3 +16,5 @@ SUM         DS.W        1
 IVAL        EQU         17
 ICNT        DC.W        IVAL
             END         START
+
+*prima modifica
