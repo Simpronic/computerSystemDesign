@@ -1,6 +1,6 @@
 * Esercizio: Gestione Code
 * La gestione della struttura dati coda viene effettuata attraverso tre funzioni: inizializzazione, inserimento in coda, estrazione in testa
-* L'esercizio mostra la gestione di una coda di words (16-bit) che ha capacità massima di QSIZE elementi.
+* L'esercizio mostra la gestione di una coda di words (16-bit) che ha capacitï¿½ massima di QSIZE elementi.
 * 
 *La coda e' definita da: descrittore di coda (Queue Descriptor Table) e da un blocco di memoria (Queue Storage Block) per contenere gli elementi
 *
@@ -60,17 +60,17 @@ QINIT		MOVE.L	QSTRT(A0),-(A7)		*A0 contiene l'indirizzo del DT. Vengono iniziali
 
 QENQ		MOVEM.L	D1-D2/A1,-(A7)		*salva i registri usati dalla subroutine
 		MOVEM.L	QLENG(A0),D1-D2	*carico la lunghezza in D1 e la dimensione massima in D2
-		CMP.L		D2,D1			*verifico se la coda è piena
+		CMP.L		D2,D1			*verifico se la coda ï¿½ piena
 		BEQ		QENQ2			*se piena Z viene impostato a 1 in automatico e posso saltare a QENQ2
 		MOVEA.L	QTAIL(A0),A1		*scrive in a1 l'indirizzo della coda
 		MOVE.W	D0,(A1)+		*inserisce il dato in coda
 		ADDI.L		#1,D1			*aggiorno la lunghezza della coda
 		MOVE.L	D1,QLENG(A0)		*memorizzo la lunghezza nel DT
 		CMPA.L	QEND(A0),A1		*controllo se l'incremento di A1 eccede il limite del buffer
-		BLE.S		QENQ1   		*se il limite non è stato superato salto a QENQ1
-		MOVEA.L	QSTRT(A0),A1		*il limite è stato superato--->carico in A1 il primo indirizzo del buffer
+		BLE.S		QENQ1   		*se il limite non ï¿½ stato superato salto a QENQ1
+		MOVEA.L	QSTRT(A0),A1		*il limite ï¿½ stato superato--->carico in A1 il primo indirizzo del buffer
 QENQ1		MOVE.L	A1,QTAIL(A0)		*aggiorno l'indirizzo della coda
-		ANDI.B		#$FB,CCR		*imposta Z = 0 in quanto la coda non è piena (ANDI opera sul byte - - - X N Z V C)
+		ANDI.B		#$FB,CCR		*imposta Z = 0 in quanto la coda non ï¿½ piena (ANDI opera sul byte - - - X N Z V C)
 QENQ2		MOVEM.L	(A7)+,A1/D1-D2	*ripristino dei registri
 		RTS
 		
@@ -81,17 +81,17 @@ QENQ2		MOVEM.L	(A7)+,A1/D1-D2	*ripristino dei registri
 
 QDEQ		MOVEM.L	D1/A1,-(A7)		*salva i registri usati dalla subroutine
 		MOVE.L	QLENG(A0),D1		*carico la lunghezza attuale in D1
-		TST.L		D1			*verifico se la coda è vuota
+		TST.L		D1			*verifico se la coda ï¿½ vuota
 		BEQ		QDEQ2			*se vuota Z viene impostato a 1 in automatico e posso saltare a QDEQ2
 		MOVEA.L	QHEAD(A0),A1		*copio in a1 l'indirizzo della testa
 		MOVE.W	(A1)+,D0		*estrazione del dato in testa 
 		SUBI.L		#1,D1			*aggiorno la lunghezza della coda
 		MOVE.L	D1,QLENG(A0)		*memorizzo la lunghezza nel DT
 		CMPA.L	QEND(A0),A1		*controllo se l'incremento di A1 eccede il limite del buffer
-		BLE.S		QDEQ1			*se il limite non è stato superato salto a QDEQ1
-		MOVEA.L	QSTRT(A0),A1		*il limite è stato superato-->carico in A1 il primo indirizzo del buffer
+		BLE.S		QDEQ1			*se il limite non ï¿½ stato superato salto a QDEQ1
+		MOVEA.L	QSTRT(A0),A1		*il limite ï¿½ stato superato-->carico in A1 il primo indirizzo del buffer
 QDEQ1		MOVE.L	A1,QHEAD(A0)		*aggiorno l'indirizzo della testa
-		ANDI.B		#$FB,CCR		*imposta Z = 0 in quanto la coda non è vuota (ANDI opera sul byte - - - X N Z V C)
+		ANDI.B		#$FB,CCR		*imposta Z = 0 in quanto la coda non ï¿½ vuota (ANDI opera sul byte - - - X N Z V C)
 QDEQ2		MOVEM.L	(A7)+,D1/A1		*ripristino dei registri
 		RTS
 
@@ -105,7 +105,8 @@ MAIN		LEA.L		Q1DT,A0		*load effective address del descrittore di coda in A0
 		LEA.L		VECTOR2,A2	*load EA del vettore 2 in A2
 LOOP		CMP.B		#0,(A1,D1)
 		BNE		PRELEVA
-INSERISCI	MOVE.B		(A2,D1),D0	*passaggio dei parametri tramite registro
+INSERISCI	MOVE.B		(A2,D1),D0	*passaggio dei parametri tramite registro 
+*Con la notazione (A2,D1) indichiamo un aggiunta rispetto all'indirizzo base A2, questa aggiunta Ã¨ pari a D1
 		JSR		QENQ
 		JMP		UPD_IND
 PRELEVA		JSR		QDEQ
@@ -118,6 +119,7 @@ FINE		JMP		FINE
 	
           	
 		END 		MAIN
+
 
 
 
