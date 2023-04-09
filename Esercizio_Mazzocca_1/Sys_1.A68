@@ -53,7 +53,7 @@ LOOP MOVE.B (A4),D5
 	MOVE.B D5,(A5)+
 	BRA LOOP
 ELOOP MOVE D4,8(A3)
-	 MOVEM (A7)+,A4/D4-D5
+	 MOVEM (A7)+,A4-A5/D4-D5
 	 UNLK A3
              RTS
 
@@ -82,7 +82,7 @@ MOVETOMEM
 	MOVE.B (A0),D1
 	MOVE.B D1,(A1)+
 	SUBI #1,D0
-END	MOVEM.L (A7)+,D0/A0
+END	MOVEM.L (A7)+,D0-D1/A0-A1
 	RTS
 
 
@@ -124,7 +124,7 @@ INT4 ORG $8400 *Interrupt per gestire acknowledgment
 	BNE SEND 
 
 	ORI.B #$12,TERC	
-	BRA END 
+	BRA END2
 
 SEND	MOVE.B (A0)+,D1
 	MOVE.B D1,(A2)
@@ -134,5 +134,6 @@ SEND	MOVE.B (A0)+,D1
 END2	MOVEM.L (A7)+,D0-D2/A0-A2
 	RTE
 	END BEGIN
+
 
 
