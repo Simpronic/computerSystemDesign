@@ -1,0 +1,138 @@
+*Sistema 1
+
+*Area Dati
+ 	ORG $8000
+
+PIADA EQU $2004
+PIACA EQU $2005
+PIADB EQU $2006
+PIACB EQU $2007
+
+TERD EQU $2000
+TERC EQU $2001
+
+NCHAR DS.W 1
+STRING DS.B 256
+
+BEGIN ORG $9000
+	JSR IPIA
+	JSR IPIB
+	JSR ITER
+	MOVE.W	SR,D0	;legge il registro di stato
+  	ANDI.W	#$D8FF,D0 ;maschera per reg stato (stato utente, int abilitati)
+	MOVE.W	D0,SR	;pone liv int a 000
+FINE JMP FINE
+
+
+IPIA ORG $9100
+	MOVE.B	#0,PIACA
+	MOVE.B	#$00,PIADA		    
+	MOVE.B	#%00100101,PIACA	
+	RTS
+
+IPIB ORG $9200
+	MOVE.B	#0,PIACB		
+	MOVE.B	#$FF,PIADB
+       	MOVE.B	#%00100101,PIACB
+	RTS
+
+ITER ORG $9300
+	MOVE.B	#$3f,TERC
+	RTS	
+
+	ORG $9400
+FIND_K  LINK A3,#0
+	  MOVEM.L A4-A5/D4-D5,-(A7)
+	  CLR D4
+	  MOVEA.L #TERD,A4
+	  MOVEA.L #STRING,A5
+LOOP MOVE.B (A4),D5
+	CMP #13,D5
+	BEQ ELOOP
+	ADDI #1,D4
+	MOVE.B D5,(A5)+
+	BRA LOOP
+ELOOP MOVE D4,8(A3)
+	 MOVEM (A7)+,A4/D4-D5
+	 UNLK A3
+             RTS
+
+INT1 ORG $8700 *Interrupt per gestire la pressione dell'enter
+	MOVEM.L D0-D2/A0-A1,-(A7)
+	MOVEA.L #STRING,A0
+	MOVEA.L #PIADB,A1
+	CLR D7
+	SUBA.L #2,A7
+	JSR FIND_K
+	MOVE (A7)+,D2
+	MOVE.B D2,NCHAR
+INPUT MOVE.B (A0),D0
+	MOVE.B (A1),D1
+	MOVE.B D0,(A1)
+	MOVEM.L (A7)+,D0-D2/A0-A1
+	RTE
+
+MOVETOMEM 
+	MOVEM.L D0-D1/A0-A1,-(A7)
+	MOVEA.L #TERD,A0
+	MOVEA.L #STRING,A1
+	MOVE.B #256,D0
+	CMP #0,D0
+	BEQ END
+	MOVE.B (A0),D1
+	MOVE.B D1,(A1)+
+	SUBI #1,D0
+END	MOVEM.L (A7)+,D0/A0
+	RTS
+
+
+INT2 ORG $8600 *Interrupt per gestire buffer full
+	MOVEM.L D0-D1/A0-A1,-(A7)
+	MOVEA.L #STRING,A0
+	MOVEA.L #PIADB,A1
+	CLR D7
+	JSR MOVETOMEM 
+	MOVE.B #256,NCHAR
+	MOVE.B (A0),D0
+	MOVE.B (A1),D1
+	MOVE.B D0,(A1)
+	MOVEM.L (A7)+,D0-D2/A0-A1
+	RTE
+
+INT3 ORG $8500 *Interrupt per gestire arrivo di un carattere
+	ANDI.B		#%11101001,TERC
+	MOVEM.L D0-D2/A0-A1,-(A7)
+	MOVEA.L #TERD,A0
+	MOVEA.L #PIADA,A1
+	MOVE.B (A1),D2
+	MOVE.B D2,(A0)
+	MOVEM.L (A7)+,D0-D2/A0-A1
+	ORI.B #$12,TERC
+	RTE
+
+*In questa Intettupt supponiamo che il primo carattere sia stato gia mandato
+
+INT4 ORG $8400 *Interrupt per gestire acknowledgment 
+	MOVEM.L D0-D2/A0-A2,-(A7)
+	MOVEA.L #STRING,A0
+	MOVEA.L #PIADB,A2
+	MOVE.B NCHAR,D0
+	ADDI #1,D7
+	ADDA D7,A0
+	SUBI #1,D0
+	CMP #0,D0
+	BNE SEND 
+
+	ORI.B #$12,TERC	
+	BRA END 
+
+SEND	MOVE.B (A0)+,D1
+	MOVE.B D1,(A2)
+	MOVE.B D0,NCHAR
+	BRA END2
+ 
+END2	MOVEM.L (A7)+,D0-D2/A0-A2
+	RTE
+	END BEGIN
+
+

@@ -1,0 +1,71 @@
+	*Sistema 2
+
+	ORG $8000
+
+PIADA EQU $2004
+PIACA EQU $2005
+PIADB EQU $2006
+PIACB EQU $2007
+
+TERD EQU $2000
+TERC EQU $2001
+
+SCHAR DC.B 'C'
+FRASE DC.B 'GOT IT'
+
+BEGIN ORG $9000
+	JSR IPIA
+	JSR IPIB
+	JSR ITER
+	MOVE.W	SR,D0	;legge il registro di stato
+  	ANDI.W	#$D8FF,D0 ;maschera per reg stato (stato utente, int abilitati)
+	MOVE.W	D0,SR	;pone liv int a 000
+FINE JMP FINE
+
+IPIA ORG $9100 
+	MOVE.B	#0,PIACA
+	MOVE.B	#$00,PIADA		    
+	MOVE.B	#%00100101,PIACA	
+	RTS
+
+IPIB ORG $9200
+	MOVE.B	#0,PIACB		
+	MOVE.B	#$FF,PIADB
+       	MOVE.B	#%00100110,PIACB
+	RTS
+
+ITER ORG $9300
+	MOVE.B	#$3f,TERC
+	RTS	
+
+
+INT3 ORG $8500 *Interrupt per gestire arrivo di un carattere
+	ANDI.B		#%11101001,TERC
+	MOVEM.L D0-D2/A0-A2,-(A7)
+	MOVEA.L #TERD,A0
+	MOVEA.L #PIADA,A1
+	MOVE.B SCHAR,D1
+	MOVEA.L #FRASE,A2
+	MOVE.B (A1),D2
+	CMP D1,D2
+	BNE STER  
+CHARHIT JSR SENDPHRASE *Se il carattere mandato corrisponde a quello che ho in memoria, mando la frase 
+	 BRA END 
+STER	MOVE.B D2,(A0)
+END 	MOVEM.L (A7)+,D0-D2/A0-A2
+	ORI.B #$12,TERC
+	RTE
+
+*In questa Intettupt supponiamo che il primo carattere sia stato gia mandato
+
+INT4 ORG $8400 *Interrupt per gestire acknowledgment 
+	
+	RTE
+
+	ORG $9400
+
+SENDPHRASE 
+RTS
+
+	END BEGIN
+
